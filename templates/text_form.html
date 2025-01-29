@@ -9,8 +9,8 @@
         <textarea name="text" rows="6" cols="50" placeholder="Enter text here..."></textarea><br>
         <label for="voice">Choose a voice:</label>
         <select name="voice">
-            {% for name, code in voices.items() %}
-                <option value="{{ code }}">{{ name }}</option>
+            {% for model in voices %}
+                 <option value="{{ model }}">{{ model }}</option>
             {% endfor %}
         </select><br>
         <button type="submit">Generate Audio</button>

@@ -9,8 +9,8 @@
         <input type="text" name="url" placeholder="Enter webpage URL" size="50"><br>
         <label for="voice">Choose a voice:</label>
         <select name="voice">
-            {% for name, code in voices.items() %}
-                <option value="{{ code }}">{{ name }}</option>
+            {% for model in voices %}
+                <option value="{{ model }}">{{ model }}</option>
             {% endfor %}
         </select><br>
         <button type="submit">Generate Audio</button>

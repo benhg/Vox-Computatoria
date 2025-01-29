@@ -1,2 +1,4 @@
 flask
 piper-tts
+bs4
+requests
