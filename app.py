@@ -6,10 +6,12 @@ app = Flask(__name__)
 
 # Define the directory where the Piper models are stored
 MODEL_DIR = "piper_voices"
+DATA_DIR = "/home/glick/Desktop/reader-app/piper_voices"
+DOWNLOAD_DIR = "/home/glick/Desktop/reader-app/piper_voices"
 
 # List all available Piper models
 def get_available_models():
-    models = [f for f in os.listdir(MODEL_DIR) if f.endswith(".onnx")]
+    models = [f.split(".onnx")[0] for f in os.listdir(MODEL_DIR) if f.endswith(".onnx")]
     return sorted(models)
 
 # Get models for dropdown
@@ -33,14 +35,16 @@ def generate_audio():
     if not model_name or model_name not in available_models:
         return "Error: Invalid model selected", 400
 
-    model_path = os.path.join(MODEL_DIR, model_name)
-    output_path = "output.wav"
+    model_path = model_name
+    output_path = f"{DATA_DIR}/output.wav"
 
     # Run Piper TTS
     try:
-        subprocess.run(
-            ["echo", f"'{text}'", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path],
-            check=True,
+        cmd = " ".join(["echo", f"'{text}'", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path, "--data-dir", DATA_DIR, "--download-dir", DOWNLOAD_DIR])
+        #print("cmd: ", cmd)
+        result = subprocess.run(
+            ["echo", f"'{text}'", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path, "--data-dir", DATA_DIR, "--download-dir", DOWNLOAD_DIR],
+            shell=True
         )
     except subprocess.CalledProcessError:
         return "Error: Failed to generate speech", 500
