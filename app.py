@@ -25,18 +25,14 @@ def text_to_speech_form():
 def webpage_to_speech_form():
     return render_template("webpage_form.html", voices=available_models)
 
-@app.route("/generate-audio", methods=["POST"])
-def generate_audio():
-    text = request.form.get("text")
-    model_name = request.form.get("voice")
+def text_to_speech(text, model_name):
+    model_path = model_name
+    output_path = f"{DATA_DIR}/output.wav"
 
     if not text:
         return "Error: No text provided", 400
     if not model_name or model_name not in available_models:
         return "Error: Invalid model selected", 400
-
-    model_path = model_name
-    output_path = f"{DATA_DIR}/output.wav"
 
     # Run Piper TTS
     try:
@@ -48,6 +44,17 @@ def generate_audio():
         )
     except subprocess.CalledProcessError:
         return "Error: Failed to generate speech", 500
+    return output_path
+
+
+@app.route("/generate-audio", methods=["POST"])
+def generate_audio():
+    text = request.form.get("text")
+    model_name = request.form.get("voice")
+
+    output_path = text_to_speech(text, model_name)
+    if "Error" in output_path:
+        return output_path
 
     return send_file(output_path, as_attachment=True, download_name="speech.wav", mimetype="audio/wav")
 
@@ -58,8 +65,6 @@ def generate_audio_from_url():
 
     if not url:
         return "Error: No URL provided", 400
-    if not model_name or model_name not in available_models:
-        return "Error: Invalid model selected", 400
 
     # Fetch webpage text
     try:
@@ -71,17 +76,9 @@ def generate_audio_from_url():
     except Exception as e:
         return f"Error fetching URL: {str(e)}", 500
 
-    model_path = os.path.join(MODEL_DIR, model_name)
-    output_path = "output.wav"
-
-    # Run Piper TTS
-    try:
-        subprocess.run(
-            ["piper", "--cuda", "--model", model_path, "--output_file", output_path, text],
-            check=True,
-        )
-    except subprocess.CalledProcessError:
-        return "Error: Failed to generate speech", 500
+    output_path = text_to_speech(text)
+    if "Error" in output_path:
+        return output_path
 
     return send_file(output_path, as_attachment=True, download_name="speech.wav", mimetype="audio/wav")
 
