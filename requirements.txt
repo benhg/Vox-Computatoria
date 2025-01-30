@@ -2,3 +2,4 @@ flask
 piper-tts
 bs4
 requests
+browser_cookie3

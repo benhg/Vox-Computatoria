@@ -1,5 +1,8 @@
 import os
 import subprocess
+import requests
+import browser_cookie3
+from bs4 import BeautifulSoup
 from flask import Flask, render_template, request, send_file, abort
 
 app = Flask(__name__)
@@ -8,6 +11,11 @@ app = Flask(__name__)
 MODEL_DIR = "piper_voices"
 DATA_DIR = "/home/glick/Desktop/reader-app/piper_voices"
 DOWNLOAD_DIR = "/home/glick/Desktop/reader-app/piper_voices"
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+}
+
 
 # List all available Piper models
 def get_available_models():
@@ -45,6 +53,46 @@ def text_to_speech(text, model_name):
     except subprocess.CalledProcessError:
         return "Error: Failed to generate speech", 500
     return output_path
+
+@app.route("/generate-audio-from-article", methods=["POST"])
+def generate_audio_from_article():
+    url = request.form.get("url")
+    model_name = request.form.get("voice")
+
+    if not url:
+        return "Error: No URL provided", 400
+
+    text = fetch_article(url)
+
+    print(text)
+
+    output_path = text_to_speech(text)
+    if "Error" in output_path:
+        return output_path
+
+    return send_file(output_path, as_attachment=True, download_name="speech.wav", mimetype="audio/wav")
+
+
+
+def get_chrome_cookies():
+    return {cookie.name: cookie.value for cookie in browser_cookie3.chrome(domain_name="newyorker.com")}
+
+
+def fetch_article(url):
+    session = requests.Session()
+    session.cookies.update(get_chrome_cookies())
+    session.headers.update(HEADERS)
+
+    response = session.get(url)
+    
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, "html.parser")
+        paragraphs = soup.select("p")  # Adjust as needed
+        text = "\n".join(p.get_text() for p in paragraphs)
+        return text
+    else:
+        print(f"Error: {response.status_code}")
+        return None
 
 
 @app.route("/generate-audio", methods=["POST"])
