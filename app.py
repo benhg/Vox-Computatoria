@@ -1,4 +1,5 @@
 import os
+import time
 import subprocess
 import requests
 import browser_cookie3
@@ -42,16 +43,36 @@ def text_to_speech(text, model_name):
     if not model_name or model_name not in available_models:
         return "Error: Invalid model selected", 400
 
+    # RM old file
+    if os.path.isfile(f"{DATA_DIR}/output.wav"):
+        os.remove(f"{DATA_DIR}/output.wav")
+
+    # RM old flag
+    if os.path.isfile(f"{DATA_DIR}/flag.txt"):
+        os.remove(f"{DATA_DIR}/flag.txt")
+
+
+    # Put the text in a file
+    tmp_file = f"{DATA_DIR}/tmp_file.txt"
+    with open(tmp_file, "w") as fh:
+        fh.write(text)
+
     # Run Piper TTS
     try:
-        cmd = " ".join(["echo", f"'{text}'", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path, "--data-dir", DATA_DIR, "--download-dir", DOWNLOAD_DIR])
-        #print("cmd: ", cmd)
+        cmd = " ".join(["echo", f"'{text}'", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path, "--data-dir", DATA_DIR, "--download-dir", DOWNLOAD_DIR, f"; echo 'done' > {DATA_DIR}/flag.txt"])
+        print("cmd: ", cmd)
         result = subprocess.run(
-            ["echo", f"'{text}'", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path, "--data-dir", DATA_DIR, "--download-dir", DOWNLOAD_DIR],
-            shell=True
+            cmd,
+            shell=True,
+            capture_output=True
         )
     except subprocess.CalledProcessError:
         return "Error: Failed to generate speech", 500
+
+    while not os.path.isfile(f"{DATA_DIR}/flag.txt"):
+        print("Can't find output file yet")
+        time.sleep(5)
+
     return output_path
 
 @app.route("/generate-audio-from-article", methods=["POST"])
@@ -62,11 +83,11 @@ def generate_audio_from_article():
     if not url:
         return "Error: No URL provided", 400
 
-    text = fetch_article(url)
+    text = fetch_article(url).split("♦")[0]
 
     print(text)
 
-    output_path = text_to_speech(text)
+    output_path = text_to_speech(text, model_name)
     if "Error" in output_path:
         return output_path
 
@@ -124,7 +145,7 @@ def generate_audio_from_url():
     except Exception as e:
         return f"Error fetching URL: {str(e)}", 500
 
-    output_path = text_to_speech(text)
+    output_path = text_to_speech(text, model_name)
     if "Error" in output_path:
         return output_path
 
