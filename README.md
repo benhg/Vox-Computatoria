@@ -1,144 +1,138 @@
-# reader-app
-A web app that reads things out loud for me 
+# Reader App
 
+A Flask-based web application that converts text and web articles into speech using Piper TTS. This app supports local, GPU-accelerated speech synthesis and allows users to generate spoken audio from manual input or website content.
 
-## Requirements:
-- CUDA12
-- CUDNN9
-- Piper-tts python package and C deps
+## Features
+- Convert text to speech using high-quality Piper TTS models.
+- Extract and convert articles from web pages into speech.
+- Supports CUDA acceleration for faster synthesis (if available).
+- Uses browser cookies to bypass paywalls on certain sites (e.g., The New Yorker).
+- Supports multiple voices/models for customization.
 
+---
 
-## Voice Structures
+## Installation
 
-I am not going to upload all the voices to GitHub, because I think redistributing them would violate the license. But I will show my directory structure so that you can set yours up to match mine
-
+### 1. Clone the Repository
+```bash
+git clone https://github.com/benhg/reader-app.git
+cd reader-app
 ```
-.
-├── app.py
-├── data
-├── Desktop
-│└── reader
-│    └── voices
-│        ├── en_US-lessac-medium.onnx
-│        └── en_US-lessac-medium.onnx.json
-├── piper_voices
-│├── dioco-medium.onnx.json
-│├── download_models.sh
-│├── download_piper_configs.sh
-│├── download_piper_models.sh
-│├── en_GB-alan-low.onnx
-│├── en_GB-alan-low.onnx.json
-│├── en_GB-alan-medium.onnx
-│├── en_GB-alan-medium.onnx.json
-│├── en_GB-alba-medium.onnx
-│├── en_GB-alba-medium.onnx.json
-│├── en_GB-aru-medium.onnx
-│├── en_GB-aru-medium.onnx.json
-│├── en_GB-cori-high.onnx
-│├── en_GB-cori-high.onnx.json
-│├── en_GB-cori-medium.onnx
-│├── en_GB-cori-medium.onnx.json
-│├── en_GB-jenny_dioco-medium.onnx
-│├── en_GB-jenny_dioco-medium.onnx.json
-│├── en_GB-northern_english_male-medium.onnx
-│├── en_GB-northern_english_male-medium.onnx.json
-│├── en_GB-semaine-medium.onnx
-│├── en_GB-semaine-medium.onnx.json
-│├── en_GB-southern_english_female-low.onnx
-│├── en_GB-southern_english_female-low.onnx.json
-│├── en_GB-vctk-medium.onnx
-│├── en_GB-vctk-medium.onnx.json
-│├── english_configs.txt
-│├── english_models.txt
-│├── english_urls.txt
-│├── en_US-amy-low.onnx
-│├── en_US-amy-low.onnx.json
-│├── en_US-amy-medium.onnx
-│├── en_US-amy-medium.onnx.json
-│├── en_US-arctic-medium.onnx
-│├── en_US-arctic-medium.onnx.json
-│├── en_US-bryce-medium.onnx
-│├── en_US-bryce-medium.onnx.json
-│├── en_US-danny-low.onnx
-│├── en_US-danny-low.onnx.json
-│├── en_US-hfc_female-medium.onnx
-│├── en_US-hfc_female-medium.onnx.json
-│├── en_US-hfc_male-medium.onnx
-│├── en_US-hfc_male-medium.onnx.json
-│├── en_US-joe-medium.onnx
-│├── en_US-joe-medium.onnx.json
-│├── en_US-john-medium.onnx
-│├── en_US-john-medium.onnx.json
-│├── en_US-kathleen-low.onnx
-│├── en_US-kathleen-low.onnx.json
-│├── en_US-kristin-medium.onnx
-│├── en_US-kristin-medium.onnx.json
-│├── en_US-kusal-medium.onnx
-│├── en_US-kusal-medium.onnx.json
-│├── en_US-l2arctic-medium.onnx
-│├── en_US-l2arctic-medium.onnx.json
-│├── en_US-lessac-high.onnx
-│├── en_US-lessac-high.onnx.json
-│├── en_US-lessac-low.onnx
-│├── en_US-lessac-low.onnx.json
-│├── en_US-lessac-medium.onnx
-│├── en_US-lessac-medium.onnx.json
-│├── en_US-libritts-high.onnx
-│├── en_US-libritts-high.onnx.json
-│├── en_US-libritts_r-medium.onnx
-│├── en_US-libritts_r-medium.onnx.json
-│├── en_US-ljspeech-high.onnx
-│├── en_US-ljspeech-high.onnx.json
-│├── en_US-ljspeech-medium.onnx
-│├── en_US-ljspeech-medium.onnx.json
-│├── en_US-norman-medium.onnx
-│├── en_US-norman-medium.onnx.json
-│├── en_US-ryan-high.onnx
-│├── en_US-ryan-high.onnx.json
-│├── en_US-ryan-low.onnx
-│├── en_US-ryan-low.onnx.json
-│├── en_US-ryan-medium.onnx
-│├── en_US-ryan-medium.onnx.json
-│├── female-low.onnx.json
-│├── female-medium.onnx.json
-│├── GB-alan-low.onnx.json
-│├── GB-alan-medium.onnx.json
-│├── GB-alba-medium.onnx.json
-│├── GB-aru-medium.onnx.json
-│├── GB-cori-high.onnx.json
-│├── GB-cori-medium.onnx.json
-│├── GB-semaine-medium.onnx.json
-│├── GB-vctk-medium.onnx.json
-│├── male-medium.onnx.json
-│├── r-medium.onnx.json
-│├── US-amy-low.onnx.json
-│├── US-amy-medium.onnx.json
-│├── US-arctic-medium.onnx.json
-│├── US-bryce-medium.onnx.json
-│├── US-danny-low.onnx.json
-│├── US-joe-medium.onnx.json
-│├── US-john-medium.onnx.json
-│├── US-kathleen-low.onnx.json
-│├── US-kristin-medium.onnx.json
-│├── US-kusal-medium.onnx.json
-│├── US-l2arctic-medium.onnx.json
-│├── US-lessac-high.onnx.json
-│├── US-lessac-low.onnx.json
-│├── US-lessac-medium.onnx.json
-│├── US-libritts-high.onnx.json
-│├── US-ljspeech-high.onnx.json
-│├── US-ljspeech-medium.onnx.json
-│├── US-norman-medium.onnx.json
-│├── US-ryan-high.onnx.json
-│├── US-ryan-low.onnx.json
-│├── US-ryan-medium.onnx.json
-│└── app.cpython-311.pyc
-├── README.md
-├── requirements.txt
-└── templates
-    ├── text_form.html
-    └── webpage_form.html
-
-8 directories, 121 files
-
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
 ```
+### 3. Download Piper Models
+You'll need Piper TTS models to generate speech. Run:
+```bash
+bash download_piper_models.sh
+bash download_piper_configs.sh
+```
+
+This will download English (US/UK) models into piper_voices/.
+
+## Usage
+
+### Run the Flask Server
+```bash
+python app.py
+```
+The app will be available at:
+
+http://127.0.0.1:5000/
+
+Deploy this app however you want. It's a Flask app.
+
+
+### Text-to-Speech
+
+Open http://127.0.0.1:5000/text-to-speech
+
+Enter text, select a voice, and submit.
+
+Download the generated speech as a .wav file.
+
+Webpage-to-Speech
+
+Open http://127.0.0.1:5000/webpage-to-speech
+
+Enter a URL, select a voice, and submit.
+
+The webpage text will be extracted and converted into speech.
+
+### API Endpoints
+
+POST /generate-audio
+
+Input: text, voice
+
+Output: .wav file
+
+POST /generate-audio-from-url
+
+Input: url, voice
+
+Output: .wav file
+
+POST /generate-audio-from-article
+
+Input: url, voice
+
+Output: .wav file
+
+(Uses browser cookies to fetch full articles)
+
+Configuration
+1. Changing the Piper Model Directory
+By default, the app looks for models in:
+```
+MODEL_DIR = "piper_voices"
+```
+
+To change this, update MODEL_DIR in config.py.
+
+2. Using GPU Acceleration
+
+Piper supports CUDA for faster processing. The app automatically uses GPU if available.
+
+3. Customizing Headers & Cookies
+
+The app mimics a real browser to fetch articles:
+
+```python
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+}
+```
+It also uses browser cookies via browser_cookie3 to access sites like The New Yorker.
+
+Troubleshooting
+1. Piper Not Found?
+Make sure piper is installed and accessible: `which piper`
+If missing, install it from Piper [GitHub](https://github.com/piper-tts).
+
+2. Output File Not Found?
+
+If output.wav isn't being generated, check:
+
+- File paths (piper_voices/output.wav).
+- Run piper manually to confirm it's working: `piper --model piper_voices/en_US-amy-medium.onnx --output_file output.wav --text "Hello world"`
+
+3. Debugging Issues?
+Run Flask with debugging enabled:
+```
+python app.py
+Check the console for errors.
+```
+
+# Responsible Use – Don't Be That Person
+
+This application is meant for personal use only by individuals who have actually paid for subscriptions to the content they are accessing. If you don’t have a subscription, you shouldn’t be using this tool to get around paywalls—end of story.
+
+Under no circumstances should you deploy this publicly where others could use your subscription to access paywalled content. Doing so effectively hands out your paid access for free, which isn’t just unfair to you—it’s essentially stealing from the publication. Newsrooms and writers rely on subscriptions to stay afloat, and circumventing that system by sharing access is not only ethically questionable but could also violate the publication’s terms of service.
+
+If you intend to use this for personal reading, keep it private. Don’t expose it to the public internet, don’t let others piggyback off your subscription, and don’t pretend you didn’t know better.
+
+# Contributing
+
+Pull requests are welcome! Please open an issue first if you'd like to discuss substantial changes.
