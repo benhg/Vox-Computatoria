@@ -54,7 +54,8 @@ def text_to_speech(text, model_name):
     # Run Piper TTS
     try:
         cmd = " ".join(["echo", f"'{text}'", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path, "--data-dir", DATA_DIR, "--download-dir", DOWNLOAD_DIR, f"; echo 'done' > {DATA_DIR}/flag.txt"])
-        print("cmd: ", cmd)
+        # print("cmd: ", cmd)
+        print("Running Model...")
         result = subprocess.run(
             cmd,
             shell=True,
@@ -79,8 +80,6 @@ def generate_audio_from_article():
 
     text = fetch_article(url).split("♦")[0]
 
-    print(text)
-
     output_path = text_to_speech(text, model_name)
     if "Error" in output_path:
         return output_path
@@ -90,7 +89,7 @@ def generate_audio_from_article():
 
 
 def get_chrome_cookies():
-    return {cookie.name: cookie.value for cookie in browser_cookie3.chrome(domain_name="newyorker.com")}
+    return {cookie.name: cookie.value for cookie in browser_cookie3.firefox(domain_name="newyorker.com")}
 
 
 def fetch_article(url):

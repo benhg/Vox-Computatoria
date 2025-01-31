@@ -41,7 +41,27 @@ The app will be available at:
 
 http://127.0.0.1:5000/
 
-Deploy this app however you want. It's a Flask app.
+Deploy this app however you want. It's a Flask app. For example, here is a systemd file you may want to use:
+
+```
+[Unit]
+Description=Reader App (Flask + Piper)
+After=network.target
+
+[Service]
+User=glick
+WorkingDirectory=/home/glick/Desktop/reader-app/src
+ExecStart=/home/glick/Desktop/reader/bin/gunicorn -w 2 -b 0.0.0.0:5123 app:app
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=always
+PIDFile=/run/reader-app.pid
+KillMode=mixed
+TimeoutStopSec=5
+
+
+[Install]
+WantedBy=multi-user.target
+```
 
 
 ### Text-to-Speech
@@ -65,19 +85,16 @@ The webpage text will be extracted and converted into speech.
 POST /generate-audio
 
 Input: text, voice
-
 Output: .wav file
 
 POST /generate-audio-from-url
 
 Input: url, voice
-
 Output: .wav file
 
 POST /generate-audio-from-article
 
 Input: url, voice
-
 Output: .wav file
 
 (Uses browser cookies to fetch full articles)
@@ -90,6 +107,8 @@ MODEL_DIR = "piper_voices"
 ```
 
 To change this, update MODEL_DIR in config.py.
+
+Other configuration options such as browser, supported domains, etc. are also in config.py
 
 2. Using GPU Acceleration
 
