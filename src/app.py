@@ -144,5 +144,10 @@ def generate_audio_from_url():
 
     return send_file(output_path, as_attachment=True, download_name="speech.wav", mimetype="audio/wav")
 
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
 if __name__ == "__main__":
     app.run(debug=True)
