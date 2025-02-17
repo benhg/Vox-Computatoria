@@ -53,8 +53,8 @@ def text_to_speech(text, model_name):
 
     # Run Piper TTS
     try:
-        cmd = " ".join(["echo", f"'{text}'", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path, "--data-dir", DATA_DIR, "--download-dir", DOWNLOAD_DIR, f"; echo 'done' > {DATA_DIR}/flag.txt"])
-        # print("cmd: ", cmd)
+        cmd = " ".join([f"cat {tmp_file}", "|", "piper", "--cuda", "--model", model_path, "--output_file", output_path, "--data-dir", DATA_DIR, "--download-dir", DOWNLOAD_DIR, f" && echo 'done' > {DATA_DIR}/flag.txt"])
+        print("cmd: ", cmd)
         print("Running Model...")
         result = subprocess.run(
             cmd,
