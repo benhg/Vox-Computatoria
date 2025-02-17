@@ -1,4 +1,4 @@
-# Reader App
+# Vox Computatoria
 
 A Flask-based web application that converts text and web articles into speech using Piper TTS. This app supports local, GPU-accelerated speech synthesis and allows users to generate spoken audio from manual input or website content.
 
